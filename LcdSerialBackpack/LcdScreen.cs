@@ -280,81 +280,6 @@ namespace HumidityControl.LcdSerialBackpack
       return this;
     }
 
-    /// <summary>
-    /// Draw the given text at the given coordinates.
-    /// </summary>
-    /// <param name="text">The text to draw.</param>
-    /// <param name="x">The x coordinate, between 0 and 160.</param>
-    /// <param name="y">The y coordinate, between 0 and 128.</param>
-    [Obsolete]
-    public void DrawText(string text, int x, int y)
-    {
-      if (x < 0 || ScreenWidth < x)
-      {
-        throw new ArgumentOutOfRangeException("x", "The X coordinate must be between 0 and " + LcdScreen.ScreenWidth);
-      }
-
-      if (y < 0 || ScreenHeight < y)
-      {
-        throw new ArgumentOutOfRangeException("y", "The Y coordinate must be between 0 and " + LcdScreen.ScreenHeight);
-      }
-
-      if (text.IndexOf('|') >= 0)
-      {
-        throw new ArgumentException("text", "Text cannot contain the | (0x7C) character.");
-      }
-
-      /*
-       * The X and Y reference coordinates (x_offset and y_offset in the
-       * source code) are used by the text generator to place text at
-       * specific locations on the screen. The coordinates refer to the
-       * upper left most pixel in the character space.
-       */
-
-      // Sets the x coordinate
-      write(StartingCommand, 0x18, (byte)x);
-
-      // Sets the y coordinate
-      write(StartingCommand, 0x19, (byte)y);
-
-      var bytes = Encoding.UTF8.GetBytes(text);
-      serial.Write(bytes, 0, bytes.Length);
-    }
-
-    [Obsolete]
-    public void SetX(int x)
-    {
-      if (x < 0 || ScreenWidth < x)
-      {
-        throw new ArgumentOutOfRangeException("x", "The X coordinate must be between 0 and " + LcdScreen.ScreenWidth);
-      }
-
-      write(StartingCommand, 0x18, (byte)x);
-    }
-
-    [Obsolete]
-    public void SetY(int y)
-    {
-      if (y < 0 || LcdScreen.ScreenHeight < y)
-      {
-        throw new ArgumentOutOfRangeException("y", "The Y coordinate must be between 0 and " + LcdScreen.ScreenHeight);
-      }
-
-      write(StartingCommand, 0x19, (byte)y);
-    }
-
-    [Obsolete]
-    public void DrawText(string text)
-    {
-      if (text.IndexOf('|') >= 0)
-      {
-        throw new ArgumentException("text", "Text cannot contain the | (0x7C) character.");
-      }
-
-      var bytes = Encoding.UTF8.GetBytes(text);
-      serial.Write(bytes, 0, bytes.Length);
-    }
-
     public LcdScreen TextAt(int column, int row)
     {
       if (column < 0 || ScreenWidth / CharWidth <= column)
@@ -366,25 +291,12 @@ namespace HumidityControl.LcdSerialBackpack
       {
         throw new ArgumentException("row", "The row must be between 0 and " + ScreenHeight / CharHeight + ".");
       }
-      
+
       return TextAtPixel(column * CharWidth, (row + 1) * CharHeight - 1);
     }
 
     public LcdScreen TextAtPixel(int x, int y)
     {
-      //Debug.Assert(0 <= x && x < ScreenWidth, "The x coordinate must be between 0 and " + ScreenWidth + ".");
-      //Debug.Assert(0 <= y && y < ScreenHeight, "The y coordinate must be between 0 and " + ScreenHeight + ".");
-
-      //if (x < 0 || ScreenWidth < x)
-      //{
-      //  throw new ArgumentOutOfRangeException(nameof(x), "The X coordinate must be between 0 and " + LCDScreen.ScreenWidth);
-      //}
-
-      //if (y < 0 || ScreenHeight < y)
-      //{
-      //  throw new ArgumentOutOfRangeException(nameof(y), "The Y coordinate must be between 0 and " + LCDScreen.ScreenHeight);
-      //}
-
       /*
        * The x and y reference coordinates (x_offset and y_offset in the
        * source code) are used by the text generator to place text at
