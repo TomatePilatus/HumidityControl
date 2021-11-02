@@ -29,7 +29,19 @@ namespace HumidityControl.LcdSerialBackpack
     /// </summary>
     public const int CharWidth = 6;
 
+    /// <summary>
+    /// Index of last column.
+    /// </summary>
+    public const int LastColumn = 20;
+
+    /// <summary>
+    /// Index of last row.
+    /// </summary>
+    public const int LastRow = 7;
+
     private readonly Stream serial;
+
+    private readonly byte[] writeBuffer = new byte[3];
 
     /// <summary>
     /// Creates a new instance of <see cref="LcdScreen"/> class.
@@ -45,6 +57,36 @@ namespace HumidityControl.LcdSerialBackpack
       }
 
       this.serial = serial;
+    }
+
+    private void write(byte b0)
+    {
+      Debug.Assert(writeBuffer.Length >= 1, "Wrong buffer size.");
+
+      writeBuffer[0] = b0;
+
+      serial.Write(writeBuffer, 0, 1);
+    }
+
+    private void write(byte b0, byte b1)
+    {
+      Debug.Assert(writeBuffer.Length >= 2, "Wrong buffer size.");
+
+      writeBuffer[0] = b0;
+      writeBuffer[1] = b1;
+
+      serial.Write(writeBuffer, 0, 2);
+    }
+
+    private void write(byte b0, byte b1, byte b2)
+    {
+      Debug.Assert(writeBuffer.Length >= 3, "Wrong buffer size.");
+
+      writeBuffer[0] = b0;
+      writeBuffer[1] = b1;
+      writeBuffer[2] = b2;
+
+      serial.Write(writeBuffer, 0, 3);
     }
 
     private void write(params byte[] bytes)
@@ -262,7 +304,7 @@ namespace HumidityControl.LcdSerialBackpack
 
       if (y1 < 0 || ScreenHeight < y1)
       {
-        throw new ArgumentOutOfRangeException("y1", "The Y coordinate must be between 0 and " + LcdScreen.ScreenHeight);
+        throw new ArgumentOutOfRangeException("y1", "The y coordinate must be between 0 and " + LcdScreen.ScreenHeight);
       }
 
       if (x2 < 0 || ScreenWidth < x2)
@@ -272,7 +314,7 @@ namespace HumidityControl.LcdSerialBackpack
 
       if (y2 < 0 || ScreenHeight < y2)
       {
-        throw new ArgumentOutOfRangeException("y2", "The Y coordinate must be between 0 and " + LcdScreen.ScreenHeight);
+        throw new ArgumentOutOfRangeException("y2", "The y coordinate must be between 0 and " + LcdScreen.ScreenHeight);
       }
 
       write(StartingCommand, 0x05, (byte)x1, (byte)y1, (byte)x2, (byte)y2);
@@ -282,17 +324,7 @@ namespace HumidityControl.LcdSerialBackpack
 
     public LcdScreen TextAt(int column, int row)
     {
-      if (column < 0 || ScreenWidth / CharWidth <= column)
-      {
-        throw new ArgumentException("column", "The column must be between 0 and " + ScreenWidth / ScreenWidth + ".");
-      }
-
-      if (row < 0 || ScreenHeight / CharHeight <= row)
-      {
-        throw new ArgumentException("row", "The row must be between 0 and " + ScreenHeight / CharHeight + ".");
-      }
-
-      return TextAtPixel(column * CharWidth, (row + 1) * CharHeight - 1);
+      return TextAtPixel(TextX(column), TextY(row));
     }
 
     public LcdScreen TextAtPixel(int x, int y)
@@ -309,6 +341,15 @@ namespace HumidityControl.LcdSerialBackpack
 
       // Sets the y coordinate
       write(StartingCommand, 0x19, (byte)y);
+
+      return this;
+    }
+
+    public LcdScreen Draw(char c)
+    {
+      Debug.Assert(c != '|', "Text cannot contain the '|' (0x7C) character.");
+
+      write((byte)c);
 
       return this;
     }
@@ -338,9 +379,9 @@ namespace HumidityControl.LcdSerialBackpack
 
     public static int TextX(int column)
     {
-      if (column < 0 || ScreenWidth / CharWidth <= column)
+      if (column < 0 || LastColumn < column)
       {
-        throw new ArgumentException("column", "The column must be between 0 and " + ScreenWidth / ScreenWidth + ".");
+        throw new ArgumentException("column", "The column must be between 0 and " + LastColumn + ".");
       }
 
       return column * CharWidth;
@@ -348,12 +389,12 @@ namespace HumidityControl.LcdSerialBackpack
 
     public static int TextY(int row)
     {
-      if (row < 0 || ScreenHeight / CharHeight <= row)
+      if (row < 0 || LastRow < row)
       {
-        throw new ArgumentException("row", "The row must be between 0 and " + ScreenHeight / CharHeight + ".");
+        throw new ArgumentException("row", "The row must be between 0 and " + LastRow + ".");
       }
 
-      return row * CharHeight - 1;
+      return (row + 1) * CharHeight - 1;
     }
   }
 }

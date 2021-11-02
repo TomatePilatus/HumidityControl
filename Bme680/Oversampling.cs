@@ -3,6 +3,7 @@ namespace HumidityControl.Bme680
   /// <summary>
   /// Oversampling settings used to control noise reduction.
   /// </summary>
+  /// <seealso href="https://github.com/georgemathieson/bme680"/>
   public enum Oversampling : byte
   {
     /// <summary>

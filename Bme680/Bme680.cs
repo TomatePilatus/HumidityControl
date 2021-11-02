@@ -8,6 +8,7 @@ namespace HumidityControl.Bme680
   /// <summary>
   /// Represents a BME680 gas, temperature, humidity and pressure sensor.
   /// </summary>
+  /// <seealso href="https://github.com/georgemathieson/bme680"/>
   public class Bme680
   {
     /// <summary>
@@ -309,7 +310,7 @@ namespace HumidityControl.Bme680
     /// <remarks>
     /// Cast to an <see cref="sbyte"/> if you want to read a signed value.
     /// </remarks>
-    public byte ReadByte(Register register)
+    internal byte ReadByte(Register register)
     {
       writeBuffer1[0] = (byte)register;
       readBuffer[0] = 0;
@@ -319,7 +320,7 @@ namespace HumidityControl.Bme680
       return readBuffer[0];
     }
 
-    public byte ReadByte(Register register, int offset, int length)
+    internal byte ReadByte(Register register, int offset, int length)
     {
       Debug.Assert(offset >= 0 && length > 0 && offset + length <= 8);
 
@@ -335,7 +336,7 @@ namespace HumidityControl.Bme680
       }
     }
 
-    public void WriteByte(Register register, byte value, int offset, int length)
+    private void WriteByte(Register register, byte value, int offset, int length)
     {
       Debug.Assert(offset >= 0 && length > 0 && offset + length <= 8);
 
@@ -361,7 +362,7 @@ namespace HumidityControl.Bme680
 
       /*
        * Instantiating a new array each time has no relevant performance drawbacks,
-       * since it is only used for reading the calibration data at the beginning.
+       * since the method is used only at startup for reading the calibration data.
        */
       var buffer = new byte[2];
 
